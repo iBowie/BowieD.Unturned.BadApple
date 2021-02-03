@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BowieD.Unturned.BadApple.Plugin", "BowieD.Unturned.BadApple.Plugin\BowieD.Unturned.BadApple.Plugin.csproj", "{895BD05B-DC15-4EC2-8517-3C90D1E85F0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BowieD.Unturned.BadApple.Generator", "BowieD.Unturned.BadApple.Generator\BowieD.Unturned.BadApple.Generator.csproj", "{83AD10A2-E1A1-439D-910E-917DE661C486}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BowieD.Unturned.BadApple.Playback", "BowieD.Unturned.BadApple.Playback\BowieD.Unturned.BadApple.Playback.csproj", "{17E49DE0-2C42-4112-9913-F0DC3F5D376C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{895BD05B-DC15-4EC2-8517-3C90D1E85F0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{895BD05B-DC15-4EC2-8517-3C90D1E85F0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{895BD05B-DC15-4EC2-8517-3C90D1E85F0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{895BD05B-DC15-4EC2-8517-3C90D1E85F0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83AD10A2-E1A1-439D-910E-917DE661C486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83AD10A2-E1A1-439D-910E-917DE661C486}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83AD10A2-E1A1-439D-910E-917DE661C486}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83AD10A2-E1A1-439D-910E-917DE661C486}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17E49DE0-2C42-4112-9913-F0DC3F5D376C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17E49DE0-2C42-4112-9913-F0DC3F5D376C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17E49DE0-2C42-4112-9913-F0DC3F5D376C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17E49DE0-2C42-4112-9913-F0DC3F5D376C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {82590BCF-7414-4856-BB0A-ECB84BBD2889}
+	EndGlobalSection
+EndGlobal
