@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using WMPLib;
 
 namespace BowieD.Unturned.BadApple.Playback
 {
@@ -64,8 +65,12 @@ namespace BowieD.Unturned.BadApple.Playback
                 Console.WriteLine("done reading. press any key to play.");
                 Console.ReadKey(true);
 
+
                 Console.WriteLine("starting in 3 seconds.");
                 Thread.Sleep(3000);
+                WindowsMediaPlayer wmp = new WindowsMediaPlayer();
+                wmp.URL = "badApple.mp3";
+                wmp.controls.play();
                 Console.Clear();
                 Console.CursorVisible = false;
 
