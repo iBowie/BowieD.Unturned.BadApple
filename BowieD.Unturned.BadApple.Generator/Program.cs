@@ -41,18 +41,18 @@ namespace BowieD.Unturned.BadApple.Generator
 
                                 if (b >= 0.5f) // white
                                 {
-                                    if (current[x, y] == true) // prev is black
+                                    if (current[x, y] == false) // prev is black
                                     {
                                         outp.Write($"{x}_{y} 0\t");
-                                        current[x, y] = false;
+                                        current[x, y] = true;
                                     }
                                 }
                                 else // black
                                 {
-                                    if (current[x, y] == false) // prev is white
+                                    if (current[x, y] == true) // prev is white
                                     {
                                         outp.Write($"{x}_{y} 1\t");
-                                        current[x, y] = true;
+                                        current[x, y] = false;
                                     }
                                 }
                             }
