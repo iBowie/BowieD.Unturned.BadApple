@@ -44,15 +44,18 @@ namespace BowieD.Unturned.BadApple.Playback
 
                             if (int.TryParse(poss[0], out int x) &&
                                 int.TryParse(poss[1], out int y) &&
-                                int.TryParse(type, out int typeData))
+                                byte.TryParse(type, out byte typeData))
                             {
                                 switch (typeData)
                                 {
                                     case 0:
-                                        f.poses.Push(new Pos(x, y, false));
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.White));
                                         break;
                                     case 1:
-                                        f.poses.Push(new Pos(x, y, true));
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.Black));
+                                        break;
+                                    case 2:
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.Gray));
                                         break;
                                 }
                             }
@@ -104,10 +107,7 @@ namespace BowieD.Unturned.BadApple.Playback
             foreach (var p in frame.poses)
             {
                 Console.SetCursorPosition(p.x, p.y);
-                if (p.type)
-                    Console.BackgroundColor = ConsoleColor.White;
-                else
-                    Console.BackgroundColor = ConsoleColor.Black;
+                Console.BackgroundColor = p.color;
                 Console.Write(' ');
             }
 
@@ -132,16 +132,16 @@ namespace BowieD.Unturned.BadApple.Playback
         }
         public struct Pos
         {
-            public Pos(int x, int y, bool type)
+            public Pos(int x, int y, ConsoleColor color)
             {
                 this.x = x;
                 this.y = y;
-                this.type = type;
+                this.color = color;
             }
 
             public readonly int x;
             public readonly int y;
-            public readonly bool type;
+            public readonly ConsoleColor color;
         }
     }
 }

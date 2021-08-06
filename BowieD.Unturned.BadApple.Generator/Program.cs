@@ -10,7 +10,11 @@ namespace BowieD.Unturned.BadApple.Generator
     {
         static void Main(string[] args)
         {
-            bool[,] current = new bool[4 * 5, 3 * 5];
+            int 
+                sizeX = 4 * 5 * 2, 
+                sizeY = 3 * 5 * 2;
+
+            byte[,] current = new byte[sizeX, sizeY];
             const string file = "badApple.mp4";
             
             if (File.Exists(file))
@@ -29,30 +33,38 @@ namespace BowieD.Unturned.BadApple.Generator
                         if (bmp == null)
                             break;
 
-                        Bitmap resized = new Bitmap(bmp, new Size(4 * 5, 3 * 5));
+                        Bitmap resized = new Bitmap(bmp, new Size(sizeX, sizeY));
 
-                        for (int x = 0; x < 4 * 5; x++)
+                        for (int x = 0; x < sizeX; x++)
                         {
-                            for (int y = 0; y < 3 * 5; y++)
+                            for (int y = 0; y < sizeY; y++)
                             {
                                 var p = resized.GetPixel(x, y);
 
                                 float b = p.GetBrightness();
 
-                                if (b >= 0.5f) // white
+                                if (b >= 0.67f) // white
                                 {
-                                    if (current[x, y] == false) // prev is black
+                                    if (current[x, y] != 0) // prev is not white
                                     {
                                         outp.Write($"{x}_{y} 0\t");
-                                        current[x, y] = true;
+                                        current[x, y] = 0;
+                                    }
+                                }
+                                else if (b >= 0.33f) // gray
+                                {
+                                    if (current[x,y] != 2) // prev is not gray
+                                    {
+                                        outp.Write($"{x}_{y} 2\t");
+                                        current[x, y] = 2;
                                     }
                                 }
                                 else // black
                                 {
-                                    if (current[x, y] == true) // prev is white
+                                    if (current[x, y] != 1) // prev is not black
                                     {
                                         outp.Write($"{x}_{y} 1\t");
-                                        current[x, y] = false;
+                                        current[x, y] = 1;
                                     }
                                 }
                             }
