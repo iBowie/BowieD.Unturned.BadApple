@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using WMPLib;
@@ -13,8 +15,83 @@ namespace BowieD.Unturned.BadApple.Playback
         private const int TICKS_30FPS = 333333, TICKS_60FPS = 166666;
         readonly static Queue<Frame> frames = new Queue<Frame>();
 
+        [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern SafeFileHandle CreateFile(
+            string fileName,
+            [MarshalAs(UnmanagedType.U4)] uint fileAccess,
+            [MarshalAs(UnmanagedType.U4)] uint fileShare,
+            IntPtr securityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+            [MarshalAs(UnmanagedType.U4)] int flags,
+            IntPtr template);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool WriteConsoleOutput(
+            SafeFileHandle hConsoleOutput,
+            CharInfo[] lpBuffer,
+            Coord dwBufferSize,
+            Coord dwBufferCoord,
+            ref SmallRect lpWriteRegion);
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Coord
+        {
+            public short X;
+            public short Y;
+
+            public Coord(short X, short Y)
+            {
+                this.X = X;
+                this.Y = Y;
+            }
+        };
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct CharUnion
+        {
+            [FieldOffset(0)] public char UnicodeChar;
+            [FieldOffset(0)] public byte AsciiChar;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct CharInfo
+        {
+            [FieldOffset(0)] public CharUnion Char;
+            [FieldOffset(2)] public short Attributes;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SmallRect
+        {
+            public short Left;
+            public short Top;
+            public short Right;
+            public short Bottom;
+        }
+
+        static SafeFileHandle consoleHandle;
+        static CharInfo[] buf;
+        static SmallRect rect;
+
+        [STAThread]
         static void Main(string[] args)
         {
+            consoleHandle = CreateFile("CONOUT$", 0x40000000, 2, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
+
+            if (consoleHandle.IsInvalid)
+                return;
+
+            buf = new CharInfo[40 * 30];
+            rect = new SmallRect()
+            {
+                Left = 0,
+                Top = 0,
+                Right = 40,
+                Bottom = 30
+            };
+
+            for (int i = 0; i < buf.Length; i++)
+                buf[i].Char.AsciiChar = (byte)' ';
+
             Console.OutputEncoding = Encoding.UTF8;
 
             const string file = "result.dat";
@@ -108,14 +185,14 @@ namespace BowieD.Unturned.BadApple.Playback
 
             foreach (var p in frame.poses)
             {
-                Console.SetCursorPosition(p.x, p.y);
-                Console.BackgroundColor = p.color;
-                Console.Write(' ');
+                buf[p.x + p.y * 40].Attributes = (short)((short)p.color << 4);
             }
+
+            bool b = WriteConsoleOutput(consoleHandle, buf, new Coord(40, 30), new Coord(0, 0), ref rect);
 
             long snap = stopwatch.ElapsedTicks;
 
-            while (stopwatch.ElapsedTicks < TICKS_30FPS)
+            while (stopwatch.ElapsedTicks < TICKS_60FPS)
             {
 
             }
