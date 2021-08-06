@@ -49,13 +49,19 @@ namespace BowieD.Unturned.BadApple.Playback
                                 switch (typeData)
                                 {
                                     case 0:
-                                        f.poses.Push(new Pos(x, y, ConsoleColor.White));
-                                        break;
-                                    case 1:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.Black));
                                         break;
+                                    case 1:
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.DarkGray));
+                                        break;
                                     case 2:
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.DarkYellow));
+                                        break;
+                                    case 3:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.Gray));
+                                        break;
+                                    case 4:
+                                        f.poses.Push(new Pos(x, y, ConsoleColor.White));
                                         break;
                                 }
                             }

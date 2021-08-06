@@ -11,8 +11,8 @@ namespace BowieD.Unturned.BadApple.Generator
         static void Main(string[] args)
         {
             int 
-                sizeX = 4 * 5 * 2, 
-                sizeY = 3 * 5 * 2;
+                sizeX = 4 * 5 * 2, // 40
+                sizeY = 3 * 5 * 2; // 30
 
             byte[,] current = new byte[sizeX, sizeY];
             const string file = "badApple.mp4";
@@ -25,6 +25,7 @@ namespace BowieD.Unturned.BadApple.Generator
                     vfreader.Open(file);
 
                     int index = 0;
+                    int steps = 4; // 0 - darkest, 4 - lightest
 
                     while (true)
                     {
@@ -43,29 +44,12 @@ namespace BowieD.Unturned.BadApple.Generator
 
                                 float b = p.GetBrightness();
 
-                                if (b >= 0.67f) // white
+                                byte val = (byte)Math.Floor(b * steps);
+
+                                if (current[x,y] != val)
                                 {
-                                    if (current[x, y] != 0) // prev is not white
-                                    {
-                                        outp.Write($"{x}_{y} 0\t");
-                                        current[x, y] = 0;
-                                    }
-                                }
-                                else if (b >= 0.33f) // gray
-                                {
-                                    if (current[x,y] != 2) // prev is not gray
-                                    {
-                                        outp.Write($"{x}_{y} 2\t");
-                                        current[x, y] = 2;
-                                    }
-                                }
-                                else // black
-                                {
-                                    if (current[x, y] != 1) // prev is not black
-                                    {
-                                        outp.Write($"{x}_{y} 1\t");
-                                        current[x, y] = 1;
-                                    }
+                                    outp.Write($"{x}_{y} {val}\t");
+                                    current[x, y] = val;
                                 }
                             }
                         }
