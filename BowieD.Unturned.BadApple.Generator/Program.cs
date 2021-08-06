@@ -10,7 +10,7 @@ namespace BowieD.Unturned.BadApple.Generator
     {
         static void Main(string[] args)
         {
-            bool[,] current = new bool[30, 14];
+            bool[,] current = new bool[4 * 5, 3 * 5];
             const string file = "badApple.mp4";
             
             if (File.Exists(file))
@@ -29,11 +29,11 @@ namespace BowieD.Unturned.BadApple.Generator
                         if (bmp == null)
                             break;
 
-                        Bitmap resized = new Bitmap(bmp, new Size(30, 14));
+                        Bitmap resized = new Bitmap(bmp, new Size(4 * 5, 3 * 5));
 
-                        for (int x = 0; x < 30; x++)
+                        for (int x = 0; x < 4 * 5; x++)
                         {
-                            for (int y = 0; y < 14; y++)
+                            for (int y = 0; y < 3 * 5; y++)
                             {
                                 var p = resized.GetPixel(x, y);
 
