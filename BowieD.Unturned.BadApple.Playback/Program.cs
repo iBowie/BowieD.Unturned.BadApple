@@ -10,6 +10,7 @@ namespace BowieD.Unturned.BadApple.Playback
 {
     class Program
     {
+        private const int TICKS_30FPS = 333333, TICKS_60FPS = 166666;
         readonly static Queue<Frame> frames = new Queue<Frame>();
 
         static void Main(string[] args)
@@ -55,12 +56,9 @@ namespace BowieD.Unturned.BadApple.Playback
                                         f.poses.Push(new Pos(x, y, ConsoleColor.DarkGray));
                                         break;
                                     case 2:
-                                        f.poses.Push(new Pos(x, y, ConsoleColor.DarkYellow));
-                                        break;
-                                    case 3:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.Gray));
                                         break;
-                                    case 4:
+                                    case 3:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.White));
                                         break;
                                 }
@@ -108,8 +106,6 @@ namespace BowieD.Unturned.BadApple.Playback
         {
             stopwatch.Restart();
 
-            DateTime drawTime = DateTime.UtcNow;
-
             foreach (var p in frame.poses)
             {
                 Console.SetCursorPosition(p.x, p.y);
@@ -119,7 +115,7 @@ namespace BowieD.Unturned.BadApple.Playback
 
             long snap = stopwatch.ElapsedTicks;
 
-            while (stopwatch.ElapsedTicks < 333333)
+            while (stopwatch.ElapsedTicks < TICKS_30FPS)
             {
 
             }

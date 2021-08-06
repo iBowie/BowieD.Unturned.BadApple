@@ -25,7 +25,7 @@ namespace BowieD.Unturned.BadApple.Generator
                     vfreader.Open(file);
 
                     int index = 0;
-                    int steps = 4; // 0 - darkest, 4 - lightest
+                    int steps = 3; // 0 - darkest, 4 - lightest
 
                     while (true)
                     {
