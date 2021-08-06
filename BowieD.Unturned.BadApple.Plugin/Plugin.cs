@@ -11,6 +11,9 @@ namespace BowieD.Unturned.BadApple.Plugin
 {
     public sealed class Plugin : RocketPlugin<PluginConfiguration>
     {
+        private const long TICKDELAY_30FPS = 333333;
+        private const long TICKDELAY_60FPS = 166666;
+
         internal static Plugin Instance { get; private set; }
 
         protected override void Load()
@@ -123,7 +126,7 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                     frameDelays.Push(sw.ElapsedTicks);
 
-                    while (sw.ElapsedTicks < 333333)
+                    while (sw.ElapsedTicks < TICKDELAY_30FPS)
                     {
 
                     }
