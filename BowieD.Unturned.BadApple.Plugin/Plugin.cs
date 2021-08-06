@@ -3,6 +3,7 @@ using SDG.Unturned;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -28,8 +29,12 @@ namespace BowieD.Unturned.BadApple.Plugin
         }
 
         static Transform[,] screen;
+        static Transform[,] fakeScreen;
+        static bool[,] currentFramePixels;
         public static bool isPlaying, isReady, demandStop;
         public readonly static Queue<Frame> frames = new Queue<Frame>();
+        private static Stack<long> frameDelays = new Stack<long>();
+        private static Stack<long> realDelays = new Stack<long>();
         public static void InitScreenAt(Vector3 position)
         {
             Vector3 spacing = Instance.Configuration.Instance.Spacing;
@@ -46,6 +51,8 @@ namespace BowieD.Unturned.BadApple.Plugin
             }
 
             screen = new Transform[resX, resY];
+            fakeScreen = new Transform[resX, resY];
+            currentFramePixels = new bool[resX, resY];
 
             for (int x = 0; x < resX; x++)
             {
@@ -55,13 +62,19 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                     Vector3 offset = new Vector3(spacing.x * x, spacing.y * invY, 0f);
 
+                    Vector3 fakeOffset = new Vector3(0f, -spacing.y * resY, 0f);
+
                     Vector3 resultPos = position + offset;
+                    Vector3 resultFakePos = resultPos + fakeOffset;
 
                     Quaternion rot = Quaternion.Euler(90f, 0f, 0f);
 
-                    Transform t = BarricadeManager.dropNonPlantedBarricade(new Barricade(whitePixel), resultPos, rot, 0, 0);
+                    Transform whiteT = BarricadeManager.dropNonPlantedBarricade(new Barricade(whitePixel), resultPos, rot, 0, 0);
+                    Transform blackT = BarricadeManager.dropNonPlantedBarricade(new Barricade(blackPixel), resultFakePos, rot, 0, 0);
 
-                    screen[x, invY] = t;
+                    screen[x, invY] = whiteT;
+                    fakeScreen[x, invY] = blackT;
+                    currentFramePixels[x, invY] = true;
                 }
             }
         }
@@ -70,9 +83,6 @@ namespace BowieD.Unturned.BadApple.Plugin
             if (isReady && !isPlaying)
             {
                 ushort soundEffect = Instance.Configuration.Instance.SoundEffectID;
-
-                ushort whitePixel = Instance.Configuration.Instance.WhitePixel;
-                ushort blackPixel = Instance.Configuration.Instance.BlackPixel;
 
                 int resX = Instance.Configuration.Instance.ResolutionX;
                 int resY = Instance.Configuration.Instance.ResolutionY;
@@ -90,29 +100,35 @@ namespace BowieD.Unturned.BadApple.Plugin
                         int invY = resY - p.y - 1;
 
                         Transform t = screen[p.x, invY];
+                        Transform fakeT = fakeScreen[p.x, invY];
 
                         Vector3 oldPos = t.localPosition;
                         Quaternion oldRot = t.localRotation;
 
-                        if (BarricadeManager.tryGetInfo(t, out var bX, out var bY, out var bPlant, out var bIndex, out var bRegion))
+                        Vector3 oldFakePos = fakeT.localPosition;
+                        Quaternion oldFakeRot = fakeT.localRotation;
+
+                        if (p.type != currentFramePixels[p.x, invY])
                         {
-                            BarricadeManager.destroyBarricade(bRegion, bX, bY, bPlant, bIndex);
+                            fakeScreen[p.x, invY] = t;
+                            screen[p.x, invY] = fakeT;
+                            currentFramePixels[p.x, invY] = p.type;
 
-                            Transform newT;
-                            
-                            if (p.type)
-                                newT = BarricadeManager.dropNonPlantedBarricade(new Barricade(whitePixel), oldPos, oldRot, 0, 0);
-                            else
-                                newT = BarricadeManager.dropNonPlantedBarricade(new Barricade(blackPixel), oldPos, oldRot, 0, 0);
-
-                            screen[p.x, invY] = newT;
+                            BarricadeManager.ServerSetBarricadeTransform(t, oldFakePos, oldFakeRot);
+                            BarricadeManager.ServerSetBarricadeTransform(fakeT, oldPos, oldRot);
                         }
                     }
 
+                    await Task.Yield();
+
+                    frameDelays.Push(sw.ElapsedTicks);
+
                     while (sw.ElapsedTicks < 333333)
                     {
-                        await Task.Yield();
+
                     }
+
+                    realDelays.Push(sw.ElapsedTicks);
                 }
 
                 if (soundEffect > 0)
@@ -139,6 +155,18 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                         break;
                     }
+                }
+            }
+
+            using (StreamWriter sw = new StreamWriter(Path.Combine(Plugin.Instance.Directory, "frames.txt"), false))
+            {
+                while (frameDelays.Count > 0)
+                {
+                    var delay = frameDelays.Pop();
+                    var realDelay = realDelays.Pop();
+
+                    sw.WriteLine($"{delay} ticks\t{delay / 10000.0:0.##} ms\t{(1000.0 / (delay / 10000.0)):0.#} fps" +
+                        $"\t{realDelay} real ticks\t{realDelay / 10000.0:0.##} real ms\t{(1000.0 / (realDelay / 10000.0)):0.#} real fps");
                 }
             }
 
@@ -193,11 +221,21 @@ namespace BowieD.Unturned.BadApple.Plugin
                 }
             }
 
+            frameDelays = new Stack<long>(frames.Count);
+            realDelays = new Stack<long>(frames.Count);
             isReady = true;
         }
         public static void DestroyScreen()
         {
             foreach (var t in screen)
+            {
+                if (BarricadeManager.tryGetInfo(t, out byte x, out byte y, out ushort plant, out ushort index, out var region))
+                {
+                    BarricadeManager.destroyBarricade(region, x, y, plant, index);
+                }
+            }
+
+            foreach (var t in fakeScreen)
             {
                 if (BarricadeManager.tryGetInfo(t, out byte x, out byte y, out ushort plant, out ushort index, out var region))
                 {
