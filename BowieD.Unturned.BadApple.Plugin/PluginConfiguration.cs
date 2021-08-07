@@ -11,9 +11,11 @@ namespace BowieD.Unturned.BadApple.Plugin
 
         public int ResolutionX { get; set; }
         public int ResolutionY { get; set; }
-        public ushort WhitePixel { get; set; }
-        public ushort BlackPixel { get; set; }
-        public ushort SoundEffectID { get; set; } = 64512;
+        public ushort WhitePixel { get; set; } = 1065;
+        public ushort BlackPixel { get; set; } = 892;
+        public ushort GrayPixel { get; set; } = 1092;
+        public ushort DarkBrownPixel { get; set; } = 1071;
+        public ushort SoundEffectID { get; set; } = 0;
 
         public float[] SpacingRaw
         {
@@ -51,15 +53,17 @@ namespace BowieD.Unturned.BadApple.Plugin
 
         public void LoadDefaults()
         {
-            ResolutionX = 30;
-            ResolutionY = 14;
+            ResolutionX = 40;
+            ResolutionY = 30;
 
-            WhitePixel = 1064;
-            BlackPixel = 1058;
+            BlackPixel = 892;
+            DarkBrownPixel = 1071;
+            GrayPixel = 1092;
+            WhitePixel = 1065;
 
-            SpacingRaw = new float[3] { 5f, 5f, 5f };
+            SpacingRaw = new float[3] { 2f, 2f, 2f };
 
-            SoundEffectID = 64512;
+            SoundEffectID = 0;
         }
     }
 }

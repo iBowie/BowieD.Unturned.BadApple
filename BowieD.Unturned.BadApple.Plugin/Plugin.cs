@@ -32,8 +32,8 @@ namespace BowieD.Unturned.BadApple.Plugin
         }
 
         static Transform[,] screen;
-        static Transform[,] fakeScreen;
-        static bool[,] currentFramePixels;
+        static Stack<Transform> whitePool, blackPool, grayPool, darkBrownPool;
+        static byte[,] currentFramePixels;
         public static bool isPlaying, isReady, demandStop;
         public readonly static Queue<Frame> frames = new Queue<Frame>();
         private static Stack<long> frameDelays = new Stack<long>();
@@ -44,6 +44,8 @@ namespace BowieD.Unturned.BadApple.Plugin
 
             ushort whitePixel = Instance.Configuration.Instance.WhitePixel;
             ushort blackPixel = Instance.Configuration.Instance.BlackPixel;
+            ushort grayPixel = Instance.Configuration.Instance.GrayPixel;
+            ushort darkBrownPixel = Instance.Configuration.Instance.DarkBrownPixel;
 
             int resX = Instance.Configuration.Instance.ResolutionX;
             int resY = Instance.Configuration.Instance.ResolutionY;
@@ -54,8 +56,11 @@ namespace BowieD.Unturned.BadApple.Plugin
             }
 
             screen = new Transform[resX, resY];
-            fakeScreen = new Transform[resX, resY];
-            currentFramePixels = new bool[resX, resY];
+            whitePool = new Stack<Transform>(resX * resY);
+            blackPool = new Stack<Transform>(resX * resY);
+            grayPool = new Stack<Transform>(resX * resY);
+            darkBrownPool = new Stack<Transform>(resX * resY);
+            currentFramePixels = new byte[resX, resY];
 
             for (int x = 0; x < resX; x++)
             {
@@ -72,12 +77,19 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                     Quaternion rot = Quaternion.Euler(90f, 0f, 0f);
 
-                    Transform whiteT = BarricadeManager.dropNonPlantedBarricade(new Barricade(whitePixel), resultPos, rot, 0, 0);
-                    Transform blackT = BarricadeManager.dropNonPlantedBarricade(new Barricade(blackPixel), resultFakePos, rot, 0, 0);
+                    Transform 
+                        blackT = BarricadeManager.dropNonPlantedBarricade(new Barricade(blackPixel), resultPos, rot, 0, 0), 
+                        grayT = BarricadeManager.dropNonPlantedBarricade(new Barricade(grayPixel), resultFakePos, rot, 0, 0), 
+                        darkBrownT = BarricadeManager.dropNonPlantedBarricade(new Barricade(darkBrownPixel), resultFakePos, rot, 0, 0), 
+                        whiteT = BarricadeManager.dropNonPlantedBarricade(new Barricade(whitePixel), resultFakePos, rot, 0, 0);
 
-                    screen[x, invY] = whiteT;
-                    fakeScreen[x, invY] = blackT;
-                    currentFramePixels[x, invY] = true;
+                    screen[x, invY] = blackT;
+                    
+                    whitePool.Push(whiteT);
+                    grayPool.Push(grayT);
+                    darkBrownPool.Push(darkBrownT);
+
+                    currentFramePixels[x, invY] = 0;
                 }
             }
         }
@@ -103,17 +115,53 @@ namespace BowieD.Unturned.BadApple.Plugin
                         int invY = resY - p.y - 1;
 
                         Transform t = screen[p.x, invY];
-                        Transform fakeT = fakeScreen[p.x, invY];
-
-                        Vector3 oldPos = t.localPosition;
-                        Quaternion oldRot = t.localRotation;
-
-                        Vector3 oldFakePos = fakeT.localPosition;
-                        Quaternion oldFakeRot = fakeT.localRotation;
 
                         if (p.type != currentFramePixels[p.x, invY])
                         {
-                            fakeScreen[p.x, invY] = t;
+                            Transform fakeT;
+
+                            switch (p.type)
+                            {
+                                case 0: // black
+                                    fakeT = blackPool.Pop();
+                                    break;
+                                case 1: // dark brown
+                                    fakeT = darkBrownPool.Pop();
+                                    break;
+                                case 2: // gray
+                                    fakeT = grayPool.Pop();
+                                    break;
+                                case 3: // white
+                                    fakeT = whitePool.Pop();
+                                    break;
+                                default:
+                                    throw new System.Exception();
+                            }
+
+                            Vector3 oldPos = t.localPosition;
+                            Quaternion oldRot = t.localRotation;
+
+                            Vector3 oldFakePos = fakeT.localPosition;
+                            Quaternion oldFakeRot = fakeT.localRotation;
+
+                            switch (currentFramePixels[p.x, invY])
+                            {
+                                case 0: // go to black pool
+                                    blackPool.Push(t);
+                                    break;
+                                case 1: // go to dark brown pool
+                                    darkBrownPool.Push(t);
+                                    break;
+                                case 2: // go to gray pool
+                                    grayPool.Push(t);
+                                    break;
+                                case 3: // go to white pool
+                                    whitePool.Push(t);
+                                    break;
+                                default:
+                                    throw new System.Exception();
+                            }
+
                             screen[p.x, invY] = fakeT;
                             currentFramePixels[p.x, invY] = p.type;
 
@@ -206,17 +254,9 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                         if (int.TryParse(poss[0], out int x) &&
                             int.TryParse(poss[1], out int y) &&
-                            int.TryParse(type, out int typeData))
+                            byte.TryParse(type, out byte typeData))
                         {
-                            switch (typeData)
-                            {
-                                case 0:
-                                    f.poses.Push(new Pos(x, y, false));
-                                    break;
-                                case 1:
-                                    f.poses.Push(new Pos(x, y, true));
-                                    break;
-                            }
+                            f.poses.Push(new Pos(x, y, typeData));
                         }
                     }
 
@@ -238,13 +278,23 @@ namespace BowieD.Unturned.BadApple.Plugin
                 }
             }
 
-            foreach (var t in fakeScreen)
+            void clearPool(Stack<Transform> pool)
             {
-                if (BarricadeManager.tryGetInfo(t, out byte x, out byte y, out ushort plant, out ushort index, out var region))
+                while (pool.Count > 0)
                 {
-                    BarricadeManager.destroyBarricade(region, x, y, plant, index);
+                    var t = pool.Pop();
+
+                    if (BarricadeManager.tryGetInfo(t, out byte x, out byte y, out ushort plant, out ushort index, out var region))
+                    {
+                        BarricadeManager.destroyBarricade(region, x, y, plant, index);
+                    }
                 }
             }
+
+            clearPool(whitePool);
+            clearPool(grayPool);
+            clearPool(darkBrownPool);
+            clearPool(blackPool);
         }
     }
 }

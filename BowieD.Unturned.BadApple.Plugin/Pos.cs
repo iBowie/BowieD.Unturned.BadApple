@@ -2,7 +2,7 @@
 {
     public struct Pos
     {
-        public Pos(int x, int y, bool type)
+        public Pos(int x, int y, byte type)
         {
             this.x = x;
             this.y = y;
@@ -11,6 +11,6 @@
 
         public readonly int x;
         public readonly int y;
-        public readonly bool type;
+        public readonly byte type;
     }
 }
