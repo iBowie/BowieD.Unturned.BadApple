@@ -14,7 +14,6 @@ namespace BowieD.Unturned.BadApple.Plugin
         public ushort WhitePixel { get; set; } = 1065;
         public ushort BlackPixel { get; set; } = 892;
         public ushort GrayPixel { get; set; } = 1092;
-        public ushort DarkBrownPixel { get; set; } = 1071;
         public ushort SoundEffectID { get; set; } = 0;
 
         public float[] SpacingRaw
@@ -57,7 +56,6 @@ namespace BowieD.Unturned.BadApple.Plugin
             ResolutionY = 30;
 
             BlackPixel = 892;
-            DarkBrownPixel = 1071;
             GrayPixel = 1092;
             WhitePixel = 1065;
 

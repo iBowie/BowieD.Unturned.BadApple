@@ -130,12 +130,9 @@ namespace BowieD.Unturned.BadApple.Playback
                                         f.poses.Push(new Pos(x, y, ConsoleColor.Black));
                                         break;
                                     case 1:
-                                        f.poses.Push(new Pos(x, y, ConsoleColor.DarkGray));
-                                        break;
-                                    case 2:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.Gray));
                                         break;
-                                    case 3:
+                                    case 2:
                                         f.poses.Push(new Pos(x, y, ConsoleColor.White));
                                         break;
                                 }
@@ -192,7 +189,7 @@ namespace BowieD.Unturned.BadApple.Playback
 
             long snap = stopwatch.ElapsedTicks;
 
-            while (stopwatch.ElapsedTicks < TICKS_60FPS)
+            while (stopwatch.ElapsedTicks < TICKS_30FPS)
             {
 
             }
