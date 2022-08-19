@@ -15,6 +15,7 @@ namespace BowieD.Unturned.BadApple.Plugin
         public ushort BlackPixel { get; set; } = 892;
         public ushort GrayPixel { get; set; } = 1092;
         public ushort SoundEffectID { get; set; } = 0;
+        public bool IsTimeLapseMode { get; set; } = false;
 
         public float[] SpacingRaw
         {
@@ -62,6 +63,8 @@ namespace BowieD.Unturned.BadApple.Plugin
             SpacingRaw = new float[3] { 2f, 2f, 2f };
 
             SoundEffectID = 0;
+
+            IsTimeLapseMode = false;
         }
     }
 }

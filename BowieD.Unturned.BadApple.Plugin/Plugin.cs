@@ -11,6 +11,8 @@ namespace BowieD.Unturned.BadApple.Plugin
 {
     public sealed class Plugin : RocketPlugin<PluginConfiguration>
     {
+        private const long TICKDELAY_5FPS = TICKDELAY_15FPS * 3;
+        private const long TICKDELAY_15FPS = TICKDELAY_30FPS * 2;
         private const long TICKDELAY_30FPS = 333333;
         private const long TICKDELAY_60FPS = 166666;
 
@@ -59,7 +61,7 @@ namespace BowieD.Unturned.BadApple.Plugin
             {
                 new Stack<Transform>(resX * resY),
                 new Stack<Transform>(resX * resY),
-                new Stack<Transform>(resX * resY)
+                new Stack<Transform>(resX * resY),
             };
             currentFramePixels = new byte[resX, resY];
 
@@ -85,8 +87,8 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                     screen[x, invY] = blackT;
 
-                    pools[0].Push(whiteT);
                     pools[1].Push(grayT);
+                    pools[2].Push(whiteT);
 
                     currentFramePixels[x, invY] = 0;
                 }
@@ -137,7 +139,7 @@ namespace BowieD.Unturned.BadApple.Plugin
 
                     frameDelays.Push(sw.ElapsedTicks);
 
-                    while (sw.ElapsedTicks < TICKDELAY_30FPS)
+                    while (sw.ElapsedTicks < TICKDELAY_5FPS)
                     {
 
                     }
@@ -148,11 +150,33 @@ namespace BowieD.Unturned.BadApple.Plugin
                 if (soundEffect > 0)
                     EffectManager.sendEffect(soundEffect, EffectManager.LARGE, screen[0, resY - 1].position);
 
+                if (Instance.Configuration.Instance.IsTimeLapseMode)
+                {
+                    foreach (var sp in Provider.clients)
+                    {
+                        if (sp?.player is null)
+                            continue;
+
+                        sp.player.skills.askSpend(sp.player.skills.experience);
+                    }
+                }
+
                 while (frames.Count > 0)
                 {
                     var curFrame = frames.Dequeue();
 
                     await drawFrame(curFrame);
+
+                    if (Instance.Configuration.Instance.IsTimeLapseMode)
+                    {
+                        foreach (var sp in Provider.clients)
+                        {
+                            if (sp?.player is null)
+                                continue;
+
+                            sp.player.skills.askAward(1);
+                        }
+                    }
 
                     if (demandStop)
                     {
